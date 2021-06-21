@@ -5,13 +5,17 @@ import neurokit
 import pandas as pd
 import math
 from datetime import datetime
+from os import listdir
 
 path_of_subjects = 'C:\\Users\\Przemek\\Documents\\PILTOR_bysubject\\'
 
-distored_signal_subjects = ['A018','A022','A027','A042','A054','A056','A066','A069','A072','A077','A083','A091','A093','A097','A105','A108','A121','A122']
+distored_signal_subjects = ['A018','A022','A024','A027','A042','A054','A056','A057','A066','A069','A072','A077','A078',
+                            'A079','A080','A081','A082','A083','A085','A086','A087','A088','A090','A091','A093','A097',
+                            'A105','A108','A121','A122','A123'] #123 lack of acq file 77 - 91 missings in the empatica
 
-#subjects = [name for name in listdir(path_of_subjects) if name not in distored_signal_subjects and name[0] == "A"]
-subjects = ['A001', 'A002', 'A003']
+subjects = [name for name in listdir(path_of_subjects) if name not in distored_signal_subjects and name[0] == "A"]
+#subjects = subjects[91:]
+#subjects = ['A001', 'A002', 'A003']
 for subj in subjects:
     path = "C:\\Users\\Przemek\\Documents\\PILTOR_bysubject\\" + subj + "\\"
     os.chdir(path)

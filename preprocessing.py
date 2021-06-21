@@ -24,10 +24,13 @@ run_ert = False; #tbd
 
 path_of_subjects = 'C:\\Users\\Przemek\\Documents\\PILTOR_bysubject\\'
 
-distored_signal_subjects = ['A018','A022','A027','A042','A054','A056','A066','A069','A072','A077','A083','A091','A093','A097','A105','A108','A121','A122']
+distored_signal_subjects = ['A018','A022','A024','A027','A042','A043','A054','A056','A057','A058','A059','A062','A066','A069','A070','A072'
+                            ,'A077' ,'A078','A079','A080','A081','A082','A083','A085','A086','A087','A088','A090','A091',
+                           'A093','A097','A104','A105','A108','A121','A122','A123'] #123 lack of acq file 77 - 91 missings in the empatica 58 59 62 70 check
 
 subjects = [name for name in listdir(path_of_subjects) if name not in distored_signal_subjects and name[0] == "A"]
 # subjects =
+#subjects = subjects[70:]
 print(subjects)
 def downsample(base_signal, signal_under, f_rate):
     indexes = (signal_under.index * f_rate).astype(int)
@@ -90,7 +93,7 @@ for subject in subjects:
 
 
     # Sampling rate to 2000 Hz for biopac and 64 Hz for E4. Downsampling...
-    #ecg_down = downsample(ecg, empatica_ppg, 2000 / 64)
+    ecg_down = downsample(ecg, empatica_ppg, 2000 / 64)
     ppg_down = downsample(ppg, empatica_ppg, 2000 / 64)
     #print(ecg_down.shape)
 
@@ -117,24 +120,27 @@ for subject in subjects:
 
     rri_e4 = np.diff(e4_peaks['PPG_Peaks'])/sampling_rate_use_acc * 1000
     ## The calculated rri needs to be chop from both sides beacause it was causing errors unpredictable results for some subjects
-    filt_rri_e4 = threshold_filter(rri_e4[1:(len(rri_e4) - 2)], threshold='strong', local_median_size=5)
+    filt_rri_e4 = threshold_filter(rri_e4[1:(len(rri_e4) - 2)], threshold = 'strong', local_median_size = 5)
     new_peaks_e4 = rrToPeaks(filt_rri_e4, sampling_rate_use_acc)
     new_peaks_e4 = new_peaks_e4 + e4_peaks['PPG_Peaks'][0]
     e4_peaks['PPG_Peaks'] = new_peaks_e4
 
     # # Visualize the processing
     plt.show()
-    hrv1 = nk.hrv(e4_peaks, sampling_rate=sampling_rate_use_acc, show=True)
-    fig = plt.gcf()
-    fig.canvas.set_window_title('E4')
+    hrv1 = nk.hrv(e4_peaks, sampling_rate=sampling_rate_use_acc, show=False)#show=True)
+  #  fig = plt.gcf()
+   # fig.canvas.set_window_title('E4')
     #possible decomposition of a signal. Not very spectecular effect
     #components = nk.signal_decompose(filtered_e4, method='emd')
     #nk.signal_plot(components)  # Visualize components
     #plt.plot(components);
     #plt.show()
+    hrv1.set_axis([subject], inplace=True)
+    if subject == 'A001':
+        hrv1.to_csv("hrv_e4.txt", mode='a', header=True, index=True)
+    else:
+        hrv1.to_csv("hrv_e4.txt", mode='a', header=False, index=True)
 
-    pd.set_option('display.max_rows',52)
-    hrv1.to_csv("hrv_e4.txt")
     print(hrv1)
 
     signals_2, biopac_peaks = nk.ppg_process(filtered_biopac_ppg, sampling_rate=sampling_rate_use_acc)
@@ -148,15 +154,26 @@ for subject in subjects:
    # new_peaks_biopac = new_peaks_biopac + biopac_peaks['PPG_Peaks'][0]
    # biopac_peaks['PPG_Peaks'] = new_peaks_biopac filter
 
-    hrv2 = nk.hrv(biopac_peaks, sampling_rate=sampling_rate_use_acc, show=True)
-    fig = plt.gcf()
-    fig.canvas.set_window_title('Biopac PPG')
+    hrv2 = nk.hrv(biopac_peaks, sampling_rate=sampling_rate_use_acc, show=False) #show=True)
+ #   fig = plt.gcf()
+  #  fig.canvas.set_window_title('Biopac PPG')
+    hrv2.set_axis([subject], inplace=True)
     print(hrv2)
-    hrv2.to_csv("hrv_biopac.txt")
-
-    ecg_biopac_peaks, info = nk.ecg_peaks(ecg[0].to_numpy(), sampling_rate=2000)
-    hrv3 = nk.hrv(ecg_biopac_peaks, sampling_rate=2000, show=True)
-    fig = plt.gcf()
-    fig.canvas.set_window_title('Biopac ECG')
+    if subject == 'A001':
+        hrv2.to_csv("hrv_biopac_ppg.txt", mode='a', header=True, index=True)
+    else:
+        hrv2.to_csv("hrv_biopac_ppg.txt", mode='a', header=False, index=True)
+    print(ecg)
+    print(ecg_down)
+    ecg_biopac_peaks, info = nk.ecg_peaks(ecg_down[0].to_numpy(), sampling_rate=64)
+    hrv3 = nk.hrv(ecg_biopac_peaks, sampling_rate=64, show=False)  # show=True)
+    hrv3.set_axis([subject], inplace=True)
     print(hrv3)
+    if subject == 'A001':
+        hrv3.to_csv("hrv_biopac_ecg.txt", mode='a', header=True, index=True)
+    else:
+        hrv3.to_csv("hrv_biopac_ecg.txt", mode='a', header=False, index=True)
+    #fig = plt.gcf()
+    #fig.canvas.set_window_title('Biopac ECG')
+    #print(hrv3)
 
