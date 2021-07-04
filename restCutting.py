@@ -9,9 +9,9 @@ from os import listdir
 
 path_of_subjects = 'C:\\Users\\Przemek\\Documents\\PILTOR_bysubject\\'
 
-distored_signal_subjects = ['A018','A022','A024','A027','A042','A054','A056','A057','A066','A069','A072','A077','A078',
+distored_signal_subjects = ['A018','A022','A024','A027','A042','A054','A056','A057','A058','A066','A069','A072','A077','A078',
                             'A079','A080','A081','A082','A083','A085','A086','A087','A088','A090','A091','A093','A097',
-                            'A105','A108','A121','A122','A123'] #123 lack of acq file 77 - 91 missings in the empatica
+                            'A105','A108','A121','A122','A123'] #123 lack of acq file 77 - 91 missings in the empatica A039
 
 subjects = [name for name in listdir(path_of_subjects) if name not in distored_signal_subjects and name[0] == "A"]
 #subjects = subjects[91:]
@@ -39,8 +39,8 @@ for subj in subjects:
     markers_increase = [idx for idx, number in enumerate(acq_data.iloc[:, 6]) if (number in [31, 32])]
     markers_decrease = [idx for idx, number in enumerate(acq_data.iloc[:, 6]) if (number in [41, 42])]
 
-    print("index observe")
-    print(markers_observe)
+    #print("index observe")
+    #print(markers_observe)
 
 #### Biopac rest
 
@@ -55,9 +55,14 @@ for subj in subjects:
     ecg_prefeedback = acq_data.iloc[(markers_rest[19] + 600000):markers_rest[20]]['ECG100C'];
     ecg_postfeedback = acq_data.iloc[markers_rest[49]:markers_rest[50]]['ECG100C'];
 
-    ecg_prefeedback.to_csv("data_processing_ecg\\" + subj + '_prefeedback_ecg.csv', index=False, header=False)
-    ecg_postfeedback.to_csv("data_processing_ecg\\" + subj + '_postfeedback_ecg.csv', index=False, header=False)
+    ppg_prefeedback = acq_data.iloc[(markers_rest[19] + 600000):markers_rest[20]]['PPG100C'];
+    ppg_postfeedback = acq_data.iloc[markers_rest[49]:markers_rest[50]]['PPG100C'];
 
+    ecg_prefeedback.to_csv("data_processing_ecg\\" + subj + '_ecg_prefeedback.csv', index=False, header=False)
+    ecg_postfeedback.to_csv("data_processing_ecg\\" + subj + '_ecg_postfeedback.csv', index=False, header=False)
+
+    ppg_prefeedback.to_csv("data_processing_ppg\\" + subj + '_ppg_prefeedback.csv', index=False, header=False)
+    ppg_postfeedback.to_csv("data_processing_ppg\\" + subj + '_ppg_postfeedback.csv', index=False, header=False)
 
 #### Biopac observed
 
@@ -68,9 +73,9 @@ for subj in subjects:
     ppg_observe2 = acq_data.iloc[(markers_observe[math.ceil(len(markers_observe)/2)] + 15000):(markers_observe[len(markers_observe) - 1] + 15000)]['PPG100C']
 
     ecg_observe1.to_csv("data_processing_ecg\\" + subj + '_ecg_observe1.csv', index=False, header=False)
-    ecg_observe2.to_csv("data_processing_ppg\\" + subj + '_ecg_observe2.csv', index=False, header=False)
+    ecg_observe2.to_csv("data_processing_ecg\\" + subj + '_ecg_observe2.csv', index=False, header=False)
 
-    ppg_observe1.to_csv("data_processing_ecg\\" + subj + '_ppg_observe1.csv', index=False, header=False)
+    ppg_observe1.to_csv("data_processing_ppg\\" + subj + '_ppg_observe1.csv', index=False, header=False)
     ppg_observe2.to_csv("data_processing_ppg\\" + subj + '_ppg_observe2.csv', index=False, header=False)
 
 #### Biopac increased
@@ -132,17 +137,17 @@ for subj in subjects:
 
     postfeedback_e4_eda_onset = int(round((seconds_before_stamp[0] * 4) + (markers_rest[49] - timestamp_acq) * 0.002))
     postfeedback_e4_ede_offset = int(round((seconds_before_stamp[0] * 4) + (markers_rest[50] - timestamp_acq) * 0.002))
-    eda_e4[postfeedback_e4_eda_onset:postfeedback_e4_ede_offset].to_csv("data_processing_e4\\" + subj + '_prefeedback_e4_eda.csv', index=False, header=False)
+    eda_e4[postfeedback_e4_eda_onset:postfeedback_e4_ede_offset].to_csv("data_processing_e4\\" + subj + '_postfeedback_e4_eda.csv', index=False, header=False)
 
 
     postfeedback_e4_ppg_onset = int(round((seconds_before_stamp[0] * 64) + (markers_rest[49] - timestamp_acq) * 0.032))
     postfeedback_e4_ppg_offset = int(round((seconds_before_stamp[0] * 64) + (markers_rest[50] - timestamp_acq) * 0.032))
-    ppg_e4[postfeedback_e4_ppg_onset:postfeedback_e4_ppg_offset].to_csv("data_processing_e4\\" + subj + '_prefeedback_e4_ppg.csv', index=False, header=False)
+    ppg_e4[postfeedback_e4_ppg_onset:postfeedback_e4_ppg_offset].to_csv("data_processing_e4\\" + subj + '_postfeedback_e4_ppg.csv', index=False, header=False)
 
 
     postfeedback_e4_acc_onset = int(round((seconds_before_stamp[0] * 32) + (markers_rest[49] - timestamp_acq) * 0.016))
     postfeedback_e4_acc_offset = int(round((seconds_before_stamp[0] * 32) + (markers_rest[50] - timestamp_acq) * 0.016))
-    acc_e4[postfeedback_e4_acc_onset:postfeedback_e4_acc_offset].to_csv("data_processing_e4\\" + subj + '_prefeedback_e4_acc.csv', index=False, header=False)
+    acc_e4[postfeedback_e4_acc_onset:postfeedback_e4_acc_offset].to_csv("data_processing_e4\\" + subj + '_postfeedback_e4_acc.csv', index=False, header=False)
 
 
 ### E4 - observe 1 and 2
