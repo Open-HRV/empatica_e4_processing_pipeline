@@ -1,3 +1,4 @@
+# Used packages and libraries
 import bioread
 import os.path
 import shutil
@@ -5,15 +6,17 @@ from os import listdir
 
 import pandas as pd
 
+# get folder of result and result of every subject
 dir = os.getcwd() + r"\results\\"
-
 results = [name for name in listdir(dir)]
 
-print(results)
-agg = pd.DataFrame();
+# Prepare data frame for aggregation
+agg = pd.DataFrame()
+
+#### Loop for every subject result
 for result in results:
     hrv = pd.read_csv(dir + r"\\" + result, sep=",")
-    print(result)
+    # Cut from the HRV result specific variables for every modality
     agg[result[4:-4] + "_HRV_RMSSD"] = hrv["HRV_RMSSD"]
     agg[result[4:-4] + "_HRV_MeanNN"] = hrv["HRV_MeanNN"]
     agg[result[4:-4] + "_HRV_SDNN"] = hrv["HRV_SDNN"]
@@ -25,6 +28,7 @@ for result in results:
     agg[result[4:-4] + "_HRV_ApEn"] = hrv["HRV_ApEn"]
     agg[result[4:-4] + "_HRV_SampEn"] = hrv["HRV_SampEn"]
 
+# Save variables to aggregate file
 agg.to_csv("biopac_vs_e4_full.csv", mode='w', header=True, index=True)
 
 
