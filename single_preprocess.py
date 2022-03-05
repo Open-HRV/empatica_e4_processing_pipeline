@@ -1,8 +1,9 @@
-#functions.py
+# -*- coding: UTF-8 -*-
 # Used packages and libraries
 import bioread
 import os.path
 import shutil
+import sys
 from os import listdir
 
 import heartpy as hp
@@ -21,22 +22,14 @@ from matplotlib import pyplot
 from scipy import signal
 import statistics as stat
 
-# Helping variables for process signal
-run_rest = True
-run_ert = False
-plot_hrv = False
-sampling_rate = 64
+sampling_rate=64
 
-# fractional downsampling function with trimming
-def downsample(base_signal, signal_under, f_rate):
-    indexes = (signal_under.index * f_rate).astype(int)
-    indexes = indexes[indexes < base_signal.shape[0]]
-    return base_signal.iloc[indexes].reset_index(drop=True)
-
-# helping function to plot 1000 first probes of signal
-def print_head(signal):
-    plt.plot(signal.head(1000))
-    plt.show()
+def preprocess_single(csv_data):
+    filtered_signal = hp.filter_signal(csv_data, cutoff=[0.5, 1.5], sample_rate=sampling_rate, order=5, filtertype='bandpass', return_top=False)
+    signals, e4_peaks = nk.ppg_process(filtered_signal, sampling_rate=sampling_rate)
+    new_peaks_e4, clean_factor, threshold = filter_peaks(e4_peaks["PPG_Peaks"])
+    hrv = nk.hrv(new_peaks_e4, sampling_rate=sampling_rate, show=False)
+    print(hrv)
 
 # convert RR's millisecond values to location of peaks
 def rr_to_peaks(rri, sampl):
@@ -104,47 +97,8 @@ def feature_filter_rri(rri, filtered_rri):
         res += abs(rr - filtr_rr)
     return res / len(rri)
 
-# Main pipeline filter function
-def filter_signals(bp_ecg, bp_ppg, e4_ppg):
-    # Downsampling PPG and ECG from Biopac to Empatica E4 sampling rate - 64 Hz
-    ecg_down = downsample(bp_ecg, e4_ppg, 2000 / 64)
-    ppg_down = downsample(bp_ppg, e4_ppg, 2000 / 64)
-
-    # Filtering PPG Biopac and PPG E4 by heartpy bandpass filter
-    filtered_e4 = hp.filter_signal(e4_ppg[0].values, cutoff=[0.5, 1.5],
-                                     sample_rate=sampling_rate, order=5, filtertype='bandpass', return_top=False)
-
-    filtered_biopac_ppg = hp.filter_signal(ppg_down[0].values, cutoff=[0.5, 1.5],
-                                           sample_rate=sampling_rate, order=5, filtertype='bandpass', return_top=False)
-
-    # Calculate peaks from the E4 PPG and filter them
-    signals, e4_peaks = nk.ppg_process((filtered_e4), sampling_rate=sampling_rate)
-    new_peaks_e4, clean_factor, threshold = filter_peaks(e4_peaks["PPG_Peaks"])
-
-    # Calculate peaks from the Biopac PPG and filter them
-    signals_2, biopac_ppg_peaks = nk.ppg_process(filtered_biopac_ppg, sampling_rate=sampling_rate)
-    new_peaks_bp_ppg, _, _ = filter_peaks(biopac_ppg_peaks["PPG_Peaks"])
-
-    # Calculate peaks from the Biopac ECG and filter them
-    info, biopac_ecg_peaks = nk.ecg_peaks(ecg_down[0].to_numpy(), sampling_rate=sampling_rate)
-    new_peaks_bp_ecg, _, _ = filter_peaks(biopac_ecg_peaks["ECG_R_Peaks"])
-
-    # Return data frame of the filtered peaks for three modalietien
-    # and clean factor and threshold iteration for E4
-    return pd.concat([pd.DataFrame({"E4_PPG": new_peaks_e4}), pd.DataFrame({"BP_PPG": new_peaks_bp_ppg}),
-                      pd.DataFrame({"BP_ECG": new_peaks_bp_ecg})], axis=1), clean_factor, threshold
-
-
-# Save calculated HRV to file corresponding to the condition with subject label
-def save_to_file(subject, channel, hrv):
-    hrv.set_axis([subject], inplace=True)
-    if subject == 'A001':
-        hrv.to_csv("results\hrv_" + channel + ".csv", mode='w', header=True, index=True)
-    else:
-        hrv.to_csv("results\hrv_" + channel + ".csv", mode='a', header=False, index=True)
-
-# Filter single PPG or ECG signal
-def  filter_single_signal(signal):
-    filtered_signal = hp.filter_signal(signal, cutoff=[0.5, 1.5], sample_rate=sampling_rate, order=5, filtertype='bandpass', return_top=False)
-    signals, e4_peaks = nk.ppg_process((filtered_e4), sampling_rate=sampling_rate)
-    new_peaks_e4, clean_factor, threshold = filter_peaks(e4_peaks["PPG_Peaks"])
+if __name__ == "__main__":
+    path = sys.argv[1]
+    data = pd.read_csv(path, sep=",")
+    preprocess_single(data['x'])
+    
