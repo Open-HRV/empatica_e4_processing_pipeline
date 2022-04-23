@@ -1,4 +1,4 @@
-# empatica_e4_processing_pipeline
+# HRV analysis for Empatica E4 and wearable devices
 Using python I explore data from empatica smart watch in order to be enable to read HRV
 
 I compared it with the Biopac aquisited ECG signal and evaluate aquracy.
@@ -12,6 +12,7 @@ Filter signal
 Evaluate HRV indeces
 
 # Pipeline
+
 
 
 # Results
