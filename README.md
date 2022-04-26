@@ -13,6 +13,6 @@ Evaluate HRV indeces
 
 # Pipeline
 
-
+![alt text](https://raw.githubusercontent.com/Przemekeke/empatica_e4_processing_pipeline/main/blob/diagram.png)
 
 # Results
